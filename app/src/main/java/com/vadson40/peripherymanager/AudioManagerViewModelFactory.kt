@@ -40,14 +40,14 @@ class AudioManagerViewModel(
     val errorMessage = _errorMessage.asStateFlow()
 
     init {
-        // Периодическое обновление состояния устройств
-        viewModelScope.launch {
-            while (true) {
-                audioDeviceManager.updateConnectedDevices()
-                _volume.value = audioDeviceManager.getCurrentVolume()
-                kotlinx.coroutines.delay(1000) // Обновляем каждую секунду
-            }
-        }
+//        // Периодическое обновление состояния устройств
+//        viewModelScope.launch {
+//            while (true) {
+//                audioDeviceManager.updateConnectedDevices()
+//                _volume.value = audioDeviceManager.getCurrentVolume()
+//                kotlinx.coroutines.delay(1000) // Обновляем каждую секунду
+//            }
+//        }
     }
 
     fun setAudioOutputDevice(device: AudioOutputDevice) {

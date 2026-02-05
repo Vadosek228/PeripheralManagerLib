@@ -46,9 +46,9 @@ class AudioDeviceManager(private val context: Context) {
         Log.i("AudioTest", "onModeChangedListener - ${it}")
         println("onModeChangedListener - $it")
 
-        androidAudioManager.mode = AndroidAudioManager.MODE_NORMAL
+//        androidAudioManager.mode = AndroidAudioManager.MODE_NORMAL
         //todo костыль
-        setAudioOutputDevice(_currentAudioDevice.value)
+//        setAudioOutputDevice(_currentAudioDevice.value)
     }
 
     val audioDeviceCallback: AudioDeviceCallback = object : AudioDeviceCallback() {
@@ -65,7 +65,9 @@ class AudioDeviceManager(private val context: Context) {
 
     val listener =
         AndroidAudioManager.OnCommunicationDeviceChangedListener { device -> // Handle changes
+            //todo тут можно обновлять состояние выбранного аудиоустройства
             Log.i("AudioTest", "OnCommunicationDeviceChangedListener - ${device?.productName}")
+            updateCurrentDevice()
         }
 
 
@@ -86,7 +88,8 @@ class AudioDeviceManager(private val context: Context) {
      */
     fun setAudioOutputDevice(device: AudioOutputDevice): Boolean {
 
-//        _currentAudioDevice.value = device
+        Log.d("AUDIO", "setAudioOutputDevice() - device - ${device.name}")
+        _currentAudioDevice.value = device
         return when (device) {
             AudioOutputDevice.EARPIECE -> setEarpiece()
             AudioOutputDevice.SPEAKER -> setSpeaker()
@@ -147,30 +150,30 @@ class AudioDeviceManager(private val context: Context) {
 //        }
 //    }
 
-    /**
-     * Полное отключение Bluetooth
-     */
-    private fun disableBluetoothCompletely() {
-        try {
-            // Останавливаем Bluetooth SCO
-            androidAudioManager.stopBluetoothSco()
-            androidAudioManager.isBluetoothScoOn = false
-
-            // Отключаем A2DP
-            androidAudioManager.isBluetoothA2dpOn = false
-
-            // Для API 26+ дополнительно отключаем Bluetooth
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                androidAudioManager.mode = AndroidAudioManager.MODE_NORMAL
-                // Дополнительные действия для отключения Bluetooth
-//            }
-
-            // Небольшая задержка для применения изменений
-            Thread.sleep(100)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
+//    /**
+//     * Полное отключение Bluetooth
+//     */
+//    private fun disableBluetoothCompletely() {
+//        try {
+//            // Останавливаем Bluetooth SCO
+//            androidAudioManager.stopBluetoothSco()
+//            androidAudioManager.isBluetoothScoOn = false
+//
+//            // Отключаем A2DP
+//            androidAudioManager.isBluetoothA2dpOn = false
+//
+//            // Для API 26+ дополнительно отключаем Bluetooth
+////            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                androidAudioManager.mode = AndroidAudioManager.MODE_NORMAL
+//                // Дополнительные действия для отключения Bluetooth
+////            }
+//
+//            // Небольшая задержка для применения изменений
+//            Thread.sleep(100)
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        }
+//    }
 
     private fun setSpeaker(): Boolean {
         return try {
@@ -203,33 +206,35 @@ class AudioDeviceManager(private val context: Context) {
         }
     }
 
-    fun switchToPhoneSpeaker() {
-
-        // 1. Отключаем Bluetooth SCO (голосовой канал)
-        androidAudioManager.setBluetoothScoOn(false)
-
-        // 2. Отключаем A2DP (музыкальный канал Bluetooth)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Для API 31+ явно отключаем A2DP
-            androidAudioManager.stopBluetoothSco()
-        } else {
-            // Для старых версий — просто снимаем фокус с Bluetooth
-            androidAudioManager.isBluetoothA2dpOn = false
-        }
-
-        // 3. Включаем громкий динамик телефона
-        androidAudioManager.isSpeakerphoneOn = true
-
-        // 4. Устанавливаем режим NORMAL (не IN_CALL/IN_COMMUNICATION)
-        androidAudioManager.mode = AndroidAudioManager.MODE_NORMAL
-
-
-        Log.d("AUDIO", "Переключено на динамик телефона")
-    }
+//    fun switchToPhoneSpeaker() {
+//
+//        // 1. Отключаем Bluetooth SCO (голосовой канал)
+//        androidAudioManager.setBluetoothScoOn(false)
+//
+//        // 2. Отключаем A2DP (музыкальный канал Bluetooth)
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//            // Для API 31+ явно отключаем A2DP
+//            androidAudioManager.stopBluetoothSco()
+//        } else {
+//            // Для старых версий — просто снимаем фокус с Bluetooth
+//            androidAudioManager.isBluetoothA2dpOn = false
+//        }
+//
+//        // 3. Включаем громкий динамик телефона
+//        androidAudioManager.isSpeakerphoneOn = true
+//
+//        // 4. Устанавливаем режим NORMAL (не IN_CALL/IN_COMMUNICATION)
+//        androidAudioManager.mode = AndroidAudioManager.MODE_NORMAL
+//
+//
+//        Log.d("AUDIO", "Переключено на динамик телефона")
+//    }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun switchToPhoneSpeakerApi33() {
         Log.d("AUDIO", "switchToPhoneSpeakerApi33()")
+
+        androidAudioManager.mode = AndroidAudioManager.MODE_IN_COMMUNICATION
 
         // Получаем все доступные устройства вывода
         val devices = androidAudioManager.availableCommunicationDevices
@@ -255,8 +260,14 @@ class AudioDeviceManager(private val context: Context) {
     fun switchToPhoneEarspicerApi33() {
         Log.d("AUDIO", "switchToPhoneEarspicerApi33()")
 
+
+
+
+        androidAudioManager.mode = AndroidAudioManager.MODE_IN_COMMUNICATION
+
         // Получаем все доступные устройства вывода
-        val devices = androidAudioManager.availableCommunicationDevices
+//        val devices = androidAudioManager.availableCommunicationDevices
+        val devices = androidAudioManager.getDevices(AndroidAudioManager.GET_DEVICES_OUTPUTS)
 
         // Ищем встроенный динамик
         val speaker = devices.find { it.type == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE }
@@ -278,6 +289,7 @@ class AudioDeviceManager(private val context: Context) {
      * Переключает на проводные наушники
      */
     private fun setWiredHeadset(): Boolean {
+        Log.i("AudioTest", "setWiredHeadset()")
         return try {
             androidAudioManager.isSpeakerphoneOn = false
             androidAudioManager.mode = AndroidAudioManager.MODE_NORMAL
@@ -312,6 +324,7 @@ class AudioDeviceManager(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.S)
     private fun setBluetoothScoApi31(): Boolean {
+        Log.i("AudioTest", "setBluetoothScoApi31()")
         return try {
             // Для API 31+ используем новый метод
             androidAudioManager.mode = AndroidAudioManager.MODE_IN_COMMUNICATION
@@ -363,6 +376,7 @@ class AudioDeviceManager(private val context: Context) {
      * Устанавливает громкость для конкретного устройства
      */
     private fun setVolumeForDevice(device: AudioOutputDevice) {
+        Log.i("AudioTest", "setVolumeForDevice()")
         val maxVolume = androidAudioManager.getStreamMaxVolume(AndroidAudioManager.STREAM_MUSIC)
         val targetVolume = when (device) {
             AudioOutputDevice.EARPIECE -> (maxVolume * 0.4).toInt() // 40% для ушного динамика
@@ -382,6 +396,7 @@ class AudioDeviceManager(private val context: Context) {
      * Настройка мониторинга подключения устройств
      */
     private fun setupAudioDeviceMonitoring() {
+        Log.i("AudioTest", "setupAudioDeviceMonitoring()")
         // Мониторинг Bluetooth устройств
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             setupAudioPlaybackCallback()
@@ -397,7 +412,7 @@ class AudioDeviceManager(private val context: Context) {
             override fun onPlaybackConfigChanged(configs: MutableList<android.media.AudioPlaybackConfiguration>) {
                 super.onPlaybackConfigChanged(configs)
                 Log.i("AudioTest", "setupAudioPlaybackCallback - ${configs.map { it }}")
-                updateConnectedDevices()
+//                updateConnectedDevices() todo
             }
         }
 
@@ -408,6 +423,7 @@ class AudioDeviceManager(private val context: Context) {
      * Обновление информации о подключенных устройствах
      */
     fun updateConnectedDevices() {
+        Log.i("AudioTest", "updateConnectedDevices() current - ${_currentAudioDevice.value}")
         // Проверка Bluetooth
         val isBluetoothA2dpOn = androidAudioManager.isBluetoothA2dpOn
         val isBluetoothScoOn = androidAudioManager.isBluetoothScoOn
@@ -424,22 +440,43 @@ class AudioDeviceManager(private val context: Context) {
      * Автоматическое переключение устройства при изменении подключения
      */
     private fun autoSwitchOnDeviceChange() {
+//        Log.d("AudioTest", "autoSwitchOnDeviceChange()")
+//        when {
+//            _isBluetoothConnected.value -> {
+//                if (_currentAudioDevice.value != AudioOutputDevice.BLUETOOTH) {
+//                    setBluetooth()
+//                }
+//            }
+//            _isWiredHeadsetConnected.value -> {
+//                if (_currentAudioDevice.value != AudioOutputDevice.WIRED_HEADSET) {
+//                    setWiredHeadset()
+//                }
+//            }
+//            else -> {
+//                // Если ничего не подключено, используем динамик
+//                if (_currentAudioDevice.value != AudioOutputDevice.SPEAKER) {
+//                    setSpeaker()
+//                }
+//            }
+//        }
+
+        Log.d("AudioTest", "autoSwitchOnDeviceChange() - current - ${_currentAudioDevice.value.name}")
         when {
-            _isBluetoothConnected.value -> {
-                if (_currentAudioDevice.value != AudioOutputDevice.BLUETOOTH) {
-                    setBluetooth()
-                }
+            _isBluetoothConnected.value && _currentAudioDevice.value == AudioOutputDevice.BLUETOOTH -> {
+                Log.d("AudioTest", "autoSwitchOnDeviceChange() - AudioOutputDevice.BLUETOOTH")
+                setBluetooth()
             }
-            _isWiredHeadsetConnected.value -> {
-                if (_currentAudioDevice.value != AudioOutputDevice.WIRED_HEADSET) {
-                    setWiredHeadset()
-                }
+            _isWiredHeadsetConnected.value && _currentAudioDevice.value == AudioOutputDevice.WIRED_HEADSET -> {
+                Log.d("AudioTest", "autoSwitchOnDeviceChange() - AudioOutputDevice.WIRED_HEADSET")
+                setWiredHeadset()
+            }
+            _currentAudioDevice.value == AudioOutputDevice.SPEAKER -> {
+                Log.d("AudioTest", "autoSwitchOnDeviceChange() - AudioOutputDevice.SPEAKER")
+                setSpeaker()
             }
             else -> {
-                // Если ничего не подключено, используем динамик
-                if (_currentAudioDevice.value != AudioOutputDevice.SPEAKER) {
-                    setSpeaker()
-                }
+                Log.d("AudioTest", "autoSwitchOnDeviceChange() - AudioOutputDevice.EARPIECE")
+                setEarpiece()
             }
         }
     }
@@ -448,6 +485,7 @@ class AudioDeviceManager(private val context: Context) {
      * Обновление текущего устройства на основе системных настроек
      */
     private fun updateCurrentDevice() {
+        Log.i("AudioTest", "updateCurrentDevice()")
         when {
             androidAudioManager.isBluetoothScoOn || androidAudioManager.isBluetoothA2dpOn -> {
                 _currentAudioDevice.value = AudioOutputDevice.BLUETOOTH
@@ -481,6 +519,7 @@ class AudioDeviceManager(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun requestAudioFocusOreo(): Boolean {
+        Log.i("AudioTest", "requestAudioFocusOreo()")
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_MEDIA)
             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -510,6 +549,7 @@ class AudioDeviceManager(private val context: Context) {
     }
 
     private fun requestAudioFocusLegacy(): Boolean {
+        Log.i("AudioTest", "requestAudioFocusLegacy()")
         val result = androidAudioManager.requestAudioFocus(
             null,
             AndroidAudioManager.STREAM_MUSIC,
@@ -522,6 +562,7 @@ class AudioDeviceManager(private val context: Context) {
      * Освобождение фокуса аудио
      */
     fun abandonAudioFocus() {
+        Log.i("AudioTest", "abandonAudioFocus()")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             audioFocusRequest?.let {
                 androidAudioManager.abandonAudioFocusRequest(it)
@@ -542,6 +583,7 @@ class AudioDeviceManager(private val context: Context) {
      * Установка громкости
      */
     fun setVolume(volume: Int) {
+        Log.i("AudioTest", "setVolume()")
         val maxVolume = androidAudioManager.getStreamMaxVolume(AndroidAudioManager.STREAM_MUSIC)
         val safeVolume = volume.coerceIn(0, maxVolume)
         androidAudioManager.setStreamVolume(
