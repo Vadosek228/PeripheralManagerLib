@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import com.vadson40.peripherymanager.audio.AudioDeviceManager
 import com.vadson40.peripherymanager.audio.v2.AudioManager
 import com.vadson40.peripherymanager.audio.v2.AudioManagerScreenV2
@@ -89,7 +90,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         mediaPlayerMy = MediaPlayerMy(this)
-        audioManagerV2 = AudioManager(this)
+        audioManagerV2 = AudioManager(this, lifecycleScope.coroutineContext)
 
         //todo v1
 //        val viewModel: AudioManagerViewModel = AudioManagerViewModel(
