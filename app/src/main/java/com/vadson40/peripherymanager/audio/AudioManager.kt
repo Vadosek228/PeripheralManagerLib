@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.vadson40.peripherymanager.model.AudioOutputDevice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -622,14 +623,4 @@ class AudioDeviceManager(private val context: Context) {
         androidAudioManager.mode = AndroidAudioManager.MODE_NORMAL
         androidAudioManager.isSpeakerphoneOn = false
     }
-}
-
-/**
- * Перечисление доступных устройств вывода звука
- */
-enum class AudioOutputDevice {
-    EARPIECE,      // Ушной динамик
-    SPEAKER,       // Громкоговоритель
-    WIRED_HEADSET, // Проводные наушники
-    BLUETOOTH      // Bluetooth устройство
 }

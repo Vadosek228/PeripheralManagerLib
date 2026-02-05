@@ -36,11 +36,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.vadson40.peripherymanager.audio.AudioDeviceManager
-import com.vadson40.peripherymanager.audio.AudioOutputDevice
+import com.vadson40.peripherymanager.audio.v2.AudioManager
+import com.vadson40.peripherymanager.audio.v2.AudioManagerScreenV2
+import com.vadson40.peripherymanager.model.AudioOutputDevice
 import com.vadson40.peripherymanager.ui.theme.PeripheryManagerTheme
 
 class MainActivity : ComponentActivity() {
@@ -64,6 +65,9 @@ class MainActivity : ComponentActivity() {
         requestPermissions(permissions.toTypedArray(), REQUEST_BT_PERMISSIONS)
     }
 
+    //todo v2
+    private lateinit var audioManagerV2: AudioManager
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -84,112 +88,41 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-
         mediaPlayerMy = MediaPlayerMy(this)
+        audioManagerV2 = AudioManager(this)
 
-        val viewModel: AudioManagerViewModel = AudioManagerViewModel(
-            audioDeviceManager = AudioDeviceManager(this)
-        )
+        //todo v1
+//        val viewModel: AudioManagerViewModel = AudioManagerViewModel(
+//            audioDeviceManager = AudioDeviceManager(this)
+//        )
 
         setContent {
-//            val context = LocalContext.current
-//            PeripheryManagerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            PeripheryManagerTheme {
+                Scaffold(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) { innerPadding ->
 
                     Column(
-                        modifier = Modifier.fillMaxSize().padding(innerPadding)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
                     ) {
-                        Button(
-                            onClick = {
-                                mediaPlayerMy.playTestSound()
-                            },
-                            content = { Text("media start") }
-                        )
-                        Button(
-                            onClick = {
-                                mediaPlayerMy.stopSound()
-                            },
-                            content = { Text("media stop") }
-                        )
-//
-//                        Button(
-//                            onClick = {
-//                                audioOutputManager.setOutputMode(AudioOutputManager.OutputMode.Earpiece)
-//                            },
-//                            content = { Text("Earpiece") }
-//                        )
-//
-//                        Button(
-//                            onClick = {
-////                                // В реальном приложении — выбор устройства из списка
-////                                val pairedDevices = btManager.getConnectedDevices()
-////                                if (pairedDevices != null && pairedDevices.isNotEmpty()) {
-////                                    audioOutputManager.connectBluetoothDevice(pairedDevices.first())
-////                                    audioOutputManager.setOutputMode(AudioOutputManager.OutputMode.BluetoothHeadset)
-////                                } else {
-////                                    Toast.makeText(context, "No paired Bluetooth device", Toast.LENGTH_SHORT).show()
-////                                }
-//
-//
-//                                val pairedDevices = btManager.getConnectedDevices()
-//                                if (pairedDevices != null && pairedDevices.isNotEmpty()) {
-//                                    audioOutputManager.connectBluetoothDevice(pairedDevices.first())
-//                                    audioOutputManager.setOutputMode(AudioOutputManager.OutputMode.BluetoothA2DP)
-//                                } else {
-//                                    Toast.makeText(context, "No paired Bluetooth device", Toast.LENGTH_SHORT).show()
-//                                }
-//                            },
-//                            content = { Text("Bloothos") }
-//                        )
-//
-//
-////                        buttonBluetoothCall.setOnClickListener {
-////                            val pairedDevices = bluetoothAdapter?.bondedDevices
-////                            if (pairedDevices != null && pairedDevices.isNotEmpty()) {
-////                                audioManager.connectBluetoothDevice(pairedDevices.first())
-////                                audioManager.setOutputMode(AudioOutputManager.OutputMode.BluetoothHFP)
-////                            } else {
-////                                Toast.makeText(this, "No paired Bluetooth device", Toast.LENGTH_SHORT).show()
-////                            }
-////                        }
-//
-//                        Button(
-//                            onClick = {
-//                                audioOutputManager.setOutputMode(AudioOutputManager.OutputMode.Speaker)
-//                            },
-//                            content = { Text("Speaker") }
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//
-//        mediaPlayerMy = MediaPlayerMy(this)
-//        audioOutputManager = AudioOutputManager(this, mediaPlayerMy)
-//
-////        btManager = BluetoothAudioManager(this)
-//        btManager = BluetoothAudioManager(this)
-//        if (btManager.hasPermissions()) {
-//            btManager.init()
-//        } else {
-//            requestBluetoothPermissions()
-//        }
-//
-////        // Пример: кнопка для выбора устройства
-////        buttonSelectDevice.setOnClickListener {
-////            val devices = btManager.getConnectedDevices()
-////            if (devices.isNotEmpty()) {
-////                // В реальном приложении — диалоговое окно выбора
-////                btManager.setAudioOutput(devices[0])
-////            } else {
-////                Toast.makeText(this, "No connected devices", Toast.LENGTH_SHORT).show()
-////            }
-//        }
+                        AudioPlayerContent()
 
+                        //todo v1
+//                        AudioDeviceSelector(viewModel)
 
-                        AudioDeviceSelector(viewModel)
+                        //todo v2
+                        val uiStateV2 by audioManagerV2.uiState.collectAsState()
+                        AudioManagerScreenV2(
+                            state = uiStateV2,
+                            onClickDevice = { audioManagerV2.onClickDevice(it) },
+                            updateVolumeLevel = { audioManagerV2.updateVolumeLevel(it) }
+                        )
                     }
                 }
+            }
         }
     }
 
@@ -199,24 +132,35 @@ class MainActivity : ComponentActivity() {
 
         super.onDestroy()
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PeripheryManagerTheme {
-
+    @Composable
+    private fun AudioPlayerContent() {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Button(
+                onClick = {
+                    mediaPlayerMy.playTestSound()
+                },
+                content = { Text("media start") }
+            )
+            Spacer(modifier = Modifier.padding(start = 24.dp))
+            Button(
+                onClick = {
+                    mediaPlayerMy.stopSound()
+                },
+                content = { Text("media stop") }
+            )
+        }
     }
 }
 
 @Composable
 fun AudioDeviceSelector(viewModel: AudioManagerViewModel) {
-//    val viewModel: AudioManagerViewModel = viewModel(
-//        factory = AudioManagerViewModelFactory(
-//            LocalContext.current
-//        )
-//    )
-
     val currentDevice by viewModel.currentDevice.collectAsState()
     val isBluetoothConnected by viewModel.isBluetoothConnected.collectAsState()
     val isWiredHeadsetConnected by viewModel.isWiredHeadsetConnected.collectAsState()

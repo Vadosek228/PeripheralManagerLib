@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.vadson40.peripherymanager.audio.AudioDeviceManager
-import com.vadson40.peripherymanager.audio.AudioOutputDevice
+import com.vadson40.peripherymanager.model.AudioOutputDevice
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
