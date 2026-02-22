@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.vadson40.peripherymanager.model.AudioOutputDevice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,7 @@ import kotlin.coroutines.CoroutineContext
  * @author Akulinin Vladislav
  * @since 05.02.2026
  */
+@RequiresApi(Build.VERSION_CODES.S)
 class AudioManager(
     private val context: Context,
     private val coroutineContext: CoroutineContext
@@ -39,38 +41,51 @@ class AudioManager(
         override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo?>?) {
             super.onAudioDevicesAdded(addedDevices)
             Log.i(TAG, "audioDeviceCallback - onAudioDevicesAdded() - ${addedDevices?.map { it?.type?.toAudioType() }}")
+
+            initDevice()
         }
 
         override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo?>?) {
             super.onAudioDevicesRemoved(removedDevices)
             Log.i(TAG, "audioDeviceCallback - onAudioDevicesRemoved() - ${removedDevices?.map { it?.type?.toAudioType() }}")
+
+            initDevice()
         }
     }
 
     private var audioPlaybackCallback: AudioPlaybackCallback = object : AudioPlaybackCallback() {
         override fun onPlaybackConfigChanged(configs: List<AudioPlaybackConfiguration?>?) {
             super.onPlaybackConfigChanged(configs)
-            Log.i(TAG, "audioPlaybackCallback - onPlaybackConfigChanged() - ${configs}")
+            Log.i(TAG, "audioPlaybackCallback - ${configs}")
+        }
+    }
+
+    private val onCommunicationDeviceListener = AudioManager.OnCommunicationDeviceChangedListener { device ->
+        Log.i(TAG, "OnCommunicationDeviceChangedListener - $device")
+        device?.type?.let { type ->
+            dataState.update { it.copy(selected = type.toAudioType()) }
         }
     }
 
     fun onClickDevice(device: AudioOutputDevice) {
         Log.i(TAG, "onClickDevice() - device - ${device.name}")
-        when (device) {
-            AudioOutputDevice.EARPIECE -> setEarpiece()
-            AudioOutputDevice.SPEAKER -> setSpeaker()
-            AudioOutputDevice.BLUETOOTH -> setBluetooth()
-            AudioOutputDevice.WIRED_HEADSET -> setHeadset()
-        }
-
-        setVolume(
+        handler.postDelayed( {
             when (device) {
-                AudioOutputDevice.EARPIECE -> 7
-                AudioOutputDevice.SPEAKER -> 6
-                AudioOutputDevice.BLUETOOTH -> 5
-                AudioOutputDevice.WIRED_HEADSET -> 4
+                AudioOutputDevice.EARPIECE -> setEarpiece()
+                AudioOutputDevice.SPEAKER -> setSpeaker()
+                AudioOutputDevice.BLUETOOTH -> setBluetooth()
+                AudioOutputDevice.WIRED_HEADSET -> setHeadset()
             }
-        )
+
+            setVolume(
+                when (device) {
+                    AudioOutputDevice.EARPIECE -> 7
+                    AudioOutputDevice.SPEAKER -> 6
+                    AudioOutputDevice.BLUETOOTH -> 5
+                    AudioOutputDevice.WIRED_HEADSET -> 4
+                }
+            )
+        }, 200)
     }
 
     fun updateVolumeLevel(volume: Int) {
@@ -78,9 +93,9 @@ class AudioManager(
     }
 
     init {
-//        androidAudioManager.setParameters("audio_auto_routing=off")
         audioManager.registerAudioDeviceCallback(audioDeviceCallback, handler)
         audioManager.registerAudioPlaybackCallback(audioPlaybackCallback, handler)
+        audioManager.addOnCommunicationDeviceChangedListener(executor, onCommunicationDeviceListener)
         initDevice()
     }
 
