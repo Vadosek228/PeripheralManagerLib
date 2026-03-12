@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "PeripheryManager"
 include(":app")
+include(":PeripheralManagerLib")
