@@ -32,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,17 +40,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import com.vadson40.peripheral.api.PeripheralManager
 import com.vadson40.peripherymanager.audio.AudioDeviceManager
 import com.vadson40.peripherymanager.audio.v2.AudioManager
 import com.vadson40.peripherymanager.audio.v2.AudioManagerScreenV2
 import com.vadson40.peripherymanager.model.AudioOutputDevice
 import com.vadson40.peripherymanager.ui.theme.PeripheryManagerTheme
+import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var btManager: BluetoothAudioManager
     private lateinit var audioOutputManager: AudioOutputManager
     private lateinit var mediaPlayerMy: MediaPlayerMy
+
+    private val peripheralManager: PeripheralManager by inject()
 
 
     private val REQUEST_BT_PERMISSIONS = 1001
@@ -93,11 +98,18 @@ class MainActivity : ComponentActivity() {
         audioManagerV2 = AudioManager(this, lifecycleScope.coroutineContext)
 
         //todo v1
-//        val viewModel: AudioManagerViewModel = AudioManagerViewModel(
-//            audioDeviceManager = AudioDeviceManager(this)
-//        )
+        val viewModel: AudioManagerViewModel = AudioManagerViewModel(
+            audioDeviceManager = AudioDeviceManager(this)
+        )
 
         setContent {
+
+            val state = peripheralManager.peripheralState.collectAsState()
+            LaunchedEffect(state) {
+                println("Check: ${state.value}")
+            }
+
+
             PeripheryManagerTheme {
                 Scaffold(
                     modifier = Modifier

@@ -3,7 +3,7 @@ package com.vadson40.peripheral.impl
 import android.content.Context
 import android.os.Build
 import com.vadson40.peripheral.api.PeripheralManager
-import com.vadson40.peripheral.impl.permission.PermissionManager
+import com.vadson40.peripheral.api.PermissionManager
 import com.vadson40.peripheral.impl.utils.Log
 import com.vadson40.peripheral.impl.utils.Log.i
 import com.vadson40.peripheral.impl.utils.TAG_PERIPHERAL
@@ -15,7 +15,7 @@ import kotlinx.coroutines.CoroutineDispatcher
  * @author Vladislav Akulinin
  * @since 25.02.2026
  */
-object PeripheralManagerFactory {
+internal object PeripheralManagerFactory {
     fun create(
         context: Context,
         dispatcher: CoroutineDispatcher,

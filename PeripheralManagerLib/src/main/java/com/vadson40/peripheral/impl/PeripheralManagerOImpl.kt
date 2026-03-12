@@ -7,7 +7,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.vadson40.peripheral.api.model.AudioDeviceType
 import com.vadson40.peripheral.api.model.PeripheralResult
-import com.vadson40.peripheral.impl.permission.PermissionManager
+import com.vadson40.peripheral.api.PermissionManager
 import com.vadson40.peripheral.impl.utils.Log
 import com.vadson40.peripheral.impl.utils.Log.i
 import com.vadson40.peripheral.impl.utils.TAG_PERIPHERAL

@@ -1,4 +1,4 @@
-package com.vadson40.peripheral.impl.permission
+package com.vadson40.peripheral.api
 
 /**
  * User permission manager. Check available permissions for users.

@@ -4,14 +4,15 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import com.vadson40.peripheral.api.PermissionManager
 
 /**
- * Implementation of [com.vadson40.peripheral.impl.permission.PermissionManager].
+ * Implementation of [PermissionManager].
  *
  * @author Akulinin Vladislav
  * @since 12.03.2026
  */
-class PermissionManagerImpl(
+internal class PermissionManagerImpl(
     private val appContext: Context
 ) : PermissionManager {
 
