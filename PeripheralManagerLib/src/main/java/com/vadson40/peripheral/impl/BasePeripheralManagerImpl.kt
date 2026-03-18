@@ -135,10 +135,8 @@ internal abstract class BasePeripheralManagerImpl(
         val currentDevice = device?.convertToAudioDeviceType()
         val audioDeviceSet: Set<AudioDeviceType> = devices.toAudioDeviceTypeSet()
 
-        /* Update the current device if it has changed in terms of priority. */
-        val deviceByPriority = audioDeviceSet.first()
-        if (deviceByPriority != currentDevice) {
-            switchAudioOutput(deviceByPriority)
+        if (currentDevice == null) {
+            Log.tag(TAG_PERIPHERAL).w("Current Device was NULL...")
             return
         }
 
@@ -148,6 +146,12 @@ internal abstract class BasePeripheralManagerImpl(
                 audioOutput = currentDevice,
                 audioOutputs = audioDeviceSet
             )
+        }
+
+        /* Update the current device if it has changed in terms of priority. */
+        val deviceByPriority = audioDeviceSet.first()
+        if (deviceByPriority != currentDevice) {
+            switchAudioOutput(deviceByPriority)
         }
     }
 

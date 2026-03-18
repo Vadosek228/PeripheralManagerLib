@@ -17,7 +17,7 @@ class MediaPlayerMy(
         // Останавливаем текущий звук, если есть
         stopSound()
 
-        mediaPlayer = MediaPlayer.create(context, R.raw.test_sound) // test_sound.mp3 в res/raw/
+        mediaPlayer = MediaPlayer.create(context, R.raw.test_sound)
         mediaPlayer?.setOnCompletionListener { stopSound() }
         mediaPlayer?.start()
         Log.d("AUDIO", "Test sound started")

@@ -18,7 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.vadson40.peripherymanager.model.AudioOutputDevice
-import com.vadson40.peripherymanager.ui.theme.PeripheryManagerTheme
+import com.vadson40.peripherymanager.presentation.ui.theme.PeripheryManagerTheme
 
 /**
  * @param selected - выбранное

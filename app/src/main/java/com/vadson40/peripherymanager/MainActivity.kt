@@ -37,7 +37,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.vadson40.peripheral.api.PeripheralManager
@@ -45,7 +44,7 @@ import com.vadson40.peripherymanager.audio.AudioDeviceManager
 import com.vadson40.peripherymanager.audio.v2.AudioManager
 import com.vadson40.peripherymanager.audio.v2.AudioManagerScreenV2
 import com.vadson40.peripherymanager.model.AudioOutputDevice
-import com.vadson40.peripherymanager.ui.theme.PeripheryManagerTheme
+import com.vadson40.peripherymanager.presentation.ui.theme.PeripheryManagerTheme
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {

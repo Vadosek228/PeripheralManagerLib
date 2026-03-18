@@ -1,4 +1,4 @@
-package com.vadson40.peripherymanager.ui.theme
+package com.vadson40.peripherymanager.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,6 +1,5 @@
-package com.vadson40.peripherymanager.ui.theme
+package com.vadson40.peripherymanager.presentation.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

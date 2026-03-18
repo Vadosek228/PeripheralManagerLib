@@ -53,8 +53,7 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
 
-    implementation(project(":PeripheralManagerLib"))
-//    implementation("com.github.Vadosek228:PeripheralManagerLib:v.1.0.0")
+    implementation("com.github.Vadosek228:PeripheralManagerLib:v.1.0.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
