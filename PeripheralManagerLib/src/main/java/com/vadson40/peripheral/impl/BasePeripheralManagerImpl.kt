@@ -14,6 +14,7 @@ import com.vadson40.peripheral.api.model.PeripheralResult
 import com.vadson40.peripheral.api.model.PeripheralState
 import com.vadson40.peripheral.api.model.PermissionRequest
 import com.vadson40.peripheral.api.PermissionManager
+import com.vadson40.peripheral.api.model.LevelChangeRequest
 import com.vadson40.peripheral.impl.utils.Log
 import com.vadson40.peripheral.impl.utils.Log.d
 import com.vadson40.peripheral.impl.utils.Log.i
@@ -121,6 +122,7 @@ internal abstract class BasePeripheralManagerImpl(
                     PeripheralResult.AudioOutput.Error
                 }
             }
+            is PeripheralRequest.VolumeLevelChange -> setVolumeLevelChange(change.value)
         } as R
     }
 
@@ -152,6 +154,18 @@ internal abstract class BasePeripheralManagerImpl(
         val deviceByPriority = audioDeviceSet.first()
         if (deviceByPriority != currentDevice) {
             switchAudioOutput(deviceByPriority)
+        }
+    }
+
+    private fun setVolumeLevelChange(value: LevelChangeRequest): PeripheralResult.VolumeLevelChange {
+        return try {
+            val maxVolume = audioManager.getStreamMaxVolume(value.streamType)
+            val safeVolume = value.volume.coerceIn(0, maxVolume)
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, safeVolume, 0)
+            PeripheralResult.VolumeLevelChange.Success
+        } catch (ex: Exception) {
+            Log.tag(TAG_PERIPHERAL).w("Error when setting the volume level... \n${ex.stackTrace}")
+            PeripheralResult.VolumeLevelChange.Error
         }
     }
 

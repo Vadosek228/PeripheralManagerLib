@@ -16,4 +16,10 @@ sealed interface PeripheralRequest<out R : PeripheralResult> {
      */
     @JvmInline
     value class AudioOutput(val deviceId: Int) : PeripheralRequest<PeripheralResult.AudioOutput>
+
+    /**
+     * Request for volume level change
+     */
+    @JvmInline
+    value class VolumeLevelChange(val value: LevelChangeRequest) : PeripheralRequest<PeripheralResult.VolumeLevelChange>
 }

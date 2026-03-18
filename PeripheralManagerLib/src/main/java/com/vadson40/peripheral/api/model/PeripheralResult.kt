@@ -39,4 +39,20 @@ sealed interface PeripheralResult {
          */
         data object Error : Microphone
     }
+
+    /**
+     * Result when changing volume level
+     */
+    sealed interface VolumeLevelChange : PeripheralResult {
+        /**
+         * Completed Successfully
+         */
+        companion object Success : VolumeLevelChange
+
+        /**
+         * An error has been encountered
+         */
+        data object Error : VolumeLevelChange
+
+    }
 }
