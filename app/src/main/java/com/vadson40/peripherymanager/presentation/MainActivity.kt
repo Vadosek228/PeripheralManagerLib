@@ -49,7 +49,11 @@ class MainActivity : ComponentActivity() {
                 MainContent(
                     uiState = uiState,
                     playClick = { viewModel.playMusic() },
-                    stopClick = { viewModel.stopMusic() }
+                    stopClick = { viewModel.stopMusic() },
+                    deviceClick = {
+
+                    },
+                    updateVolumeLevel = { viewModel.setVolumeLevel(it) }
                 )
             }
         }
@@ -60,7 +64,9 @@ class MainActivity : ComponentActivity() {
 private fun MainContent(
     uiState: UiState,
     playClick: () -> Unit,
-    stopClick: () -> Unit
+    stopClick: () -> Unit,
+    deviceClick: () -> Unit,
+    updateVolumeLevel: (Int) -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -84,7 +90,8 @@ private fun MainContent(
                         state = uiState,
                         deviceClick = {
                             //todo
-                        }
+                        },
+                        updateVolumeLevel = updateVolumeLevel
                     )
                 }
                 is UiState.Error -> {
@@ -98,7 +105,8 @@ private fun MainContent(
 @Composable
 private fun MainScreenSuccessContent(
     state: UiState.Success,
-    deviceClick: (AudioOutputDeviceVO) -> Unit
+    deviceClick: (AudioOutputDeviceVO) -> Unit,
+    updateVolumeLevel: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -136,7 +144,7 @@ private fun MainScreenSuccessContent(
                 Slider(
                     value = state.volumeLevel.toFloat(),
                     onValueChange = {
-//                        updateVolumeLevel(it.toInt()) todo
+                        updateVolumeLevel(it.toInt())
                     },
                     valueRange = 0f..15f,
                     steps = 14
@@ -152,18 +160,14 @@ private fun MainScreenSuccessContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
-                onClick = {
-//                    updateVolumeLevel(0) todo
-                },
+                onClick = { updateVolumeLevel(0) },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Без звука")
             }
 
             Button(
-                onClick = {
-//                    updateVolumeLevel(4) todo
-                },
+                onClick = { updateVolumeLevel(4) },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Включить звук")
@@ -185,7 +189,9 @@ private fun PreviewMainContent() {
                 volumeLevel = 1
             ),
             playClick = {},
-            stopClick = {}
+            stopClick = {},
+            deviceClick = {},
+            updateVolumeLevel = {}
         )
     }
 }

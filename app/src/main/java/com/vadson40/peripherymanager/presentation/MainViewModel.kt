@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vadson40.peripheral.api.PeripheralManager
 import com.vadson40.peripheral.api.model.AudioDeviceType
+import com.vadson40.peripheral.api.model.LevelChangeRequest
+import com.vadson40.peripheral.api.model.PeripheralRequest
 import com.vadson40.peripherymanager.domain.manager.MediaPlayerManager
 import com.vadson40.peripherymanager.presentation.model.AudioOutputDeviceType
 import com.vadson40.peripherymanager.presentation.model.AudioOutputDeviceVO
@@ -14,6 +16,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * @author Akulinin Vladislav
@@ -26,12 +29,14 @@ class MainViewModel(
 
     private data class DataState(
         val audioDevice: AudioOutputDeviceVO,
-        val audioDeviceList: List<AudioOutputDeviceVO>
+        val audioDeviceList: List<AudioOutputDeviceVO>,
+        val volumeLevel: Int
     ) {
         companion object {
             val EMPTY = DataState(
                 audioDevice = AudioOutputDeviceVO.EMPTY,
                 audioDeviceList = listOf(AudioOutputDeviceVO.EMPTY),
+                volumeLevel = 5
             )
         }
     }
@@ -41,7 +46,7 @@ class MainViewModel(
             UiState.Success(
                 selected = data.audioDevice,
                 devicesList = data.audioDeviceList,
-                volumeLevel = 1 //todo add logic
+                volumeLevel = data.volumeLevel
             )
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
@@ -65,6 +70,22 @@ class MainViewModel(
 
     fun stopMusic() {
         mediaManager.stop()
+    }
+
+    fun setVolumeLevel(value: Int) {
+        viewModelScope.launch {
+            runCatching {
+                peripheralManager.request(PeripheralRequest.VolumeLevelChange(LevelChangeRequest(value)))
+            }.onSuccess {
+                dataState.update { current ->
+                    current.copy(
+                        volumeLevel = value
+                    )
+                }
+            }.onFailure {
+                // TODO
+            }
+        }
     }
 
     private fun AudioDeviceType.toAudioOutputDeviceVO(): AudioOutputDeviceVO {
