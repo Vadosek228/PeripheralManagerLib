@@ -1,10 +1,13 @@
 package com.vadson40.peripherymanager.presentation
 
+import android.Manifest
 import android.content.res.Configuration
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -38,6 +42,12 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
  */
 class MainActivity : ComponentActivity() {
 
+    private val permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            val ok = result[Manifest.permission.RECORD_AUDIO] == true
+            // Permission granted
+        }
+
     private val viewModel: MainViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,15 +56,27 @@ class MainActivity : ComponentActivity() {
         setContent {
             val uiState by viewModel.uiState.collectAsState()
             PeripheryManagerTheme {
+
                 MainContent(
                     uiState = uiState,
                     playClick = { viewModel.playMusic() },
                     stopClick = { viewModel.stopMusic() },
-                    deviceClick = {
-
-                    },
+                    deviceClick = { viewModel.selectDevice(it) },
                     updateVolumeLevel = { viewModel.setVolumeLevel(it) }
                 )
+
+                val event by viewModel.event.collectAsState(null)
+                LaunchedEffect(event) {
+                    when (val event = event) {
+                        MainEvent.PermissionRequest -> {
+                            // Request permissions
+                        }
+                        is MainEvent.ShowToast -> {
+                            Toast.makeText(this@MainActivity, event.message, Toast.LENGTH_SHORT).show()
+                        }
+                        else -> { /* No Action. */ }
+                    }
+                }
             }
         }
     }
@@ -65,7 +87,7 @@ private fun MainContent(
     uiState: UiState,
     playClick: () -> Unit,
     stopClick: () -> Unit,
-    deviceClick: () -> Unit,
+    deviceClick: (AudioOutputDeviceVO) -> Unit,
     updateVolumeLevel: (Int) -> Unit
 ) {
     Scaffold(
@@ -88,14 +110,9 @@ private fun MainContent(
                 is UiState.Success -> {
                     MainScreenSuccessContent(
                         state = uiState,
-                        deviceClick = {
-                            //todo
-                        },
+                        deviceClick = deviceClick,
                         updateVolumeLevel = updateVolumeLevel
                     )
-                }
-                is UiState.Error -> {
-                    //TODO show error
                 }
             }
         }
@@ -124,6 +141,7 @@ private fun MainScreenSuccessContent(
         state.devicesList.forEach { device ->
             DeviceButton(
                 device = device.type,
+                selected = device != state.selected,
                 onClick = { deviceClick.invoke(device) }
             )
         }

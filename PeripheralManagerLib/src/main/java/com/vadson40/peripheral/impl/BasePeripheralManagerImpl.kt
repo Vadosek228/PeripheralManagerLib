@@ -6,6 +6,7 @@ import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.AudioPlaybackConfiguration
+import android.os.Build
 import android.os.Handler
 import com.vadson40.peripheral.api.PeripheralManager
 import com.vadson40.peripheral.api.model.AudioDeviceType
@@ -59,18 +60,6 @@ internal abstract class BasePeripheralManagerImpl(
         }
     }
 
-    private val communicationDeviceListener = AudioManager.OnCommunicationDeviceChangedListener { device ->
-        val audioDevice = device?.convertToAudioDeviceType()
-        Log.tag(TAG_PERIPHERAL).i("The audio output device has changed - $audioDevice, in OnCommunicationDeviceChangedListener")
-        audioDevice?.let { setAudioOutput ->
-            dataState.update { it.copy(audioOutput = setAudioOutput) }
-        }
-    }
-
-    private val modeChangedListener = AudioManager.OnModeChangedListener { mode ->
-        Log.tag(TAG_PERIPHERAL).i("Mode has changed - ${mode.modeToStringFormat()}")
-    }
-
     /**
      * To update or remove the list of devices.
      */
@@ -91,8 +80,17 @@ internal abstract class BasePeripheralManagerImpl(
         audioManager.registerAudioDeviceCallback(audioDeviceCallback, handler)
         audioManager.registerAudioPlaybackCallback(audioPlaybackCallback, handler)
 
-        audioManager.addOnCommunicationDeviceChangedListener(executor, communicationDeviceListener)
-        audioManager.addOnModeChangedListener(executor, modeChangedListener)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val communicationDeviceListener = AudioManager.OnCommunicationDeviceChangedListener { device ->
+                val audioDevice = device?.convertToAudioDeviceType()
+                Log.tag(TAG_PERIPHERAL).i("The audio output device has changed - $audioDevice, in OnCommunicationDeviceChangedListener")
+            }
+            val modeChangedListener = AudioManager.OnModeChangedListener { mode ->
+                Log.tag(TAG_PERIPHERAL).i("Mode has changed - ${mode.modeToStringFormat()}")
+            }
+            audioManager.addOnCommunicationDeviceChangedListener(executor, communicationDeviceListener)
+            audioManager.addOnModeChangedListener(executor, modeChangedListener)
+        }
 
         refreshAudioOutputDevices()
     }
@@ -116,6 +114,7 @@ internal abstract class BasePeripheralManagerImpl(
             is PeripheralRequest.AudioOutput -> {
                 val deviceAvailable = dataState.value.audioOutputs.firstOrNull { it.deviceId == change.deviceId }
                 if (deviceAvailable != null) {
+                    dataState.update { it.copy(audioOutput = deviceAvailable) }
                     switchAudioOutput(deviceAvailable)
                 } else {
                     Log.tag(TAG_PERIPHERAL).w("Unable to find the requested audio output device in the current list of available audio devices by deviceId=${change.deviceId}...")

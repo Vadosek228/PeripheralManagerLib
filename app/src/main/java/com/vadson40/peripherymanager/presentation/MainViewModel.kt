@@ -9,8 +9,10 @@ import com.vadson40.peripheral.api.model.PeripheralRequest
 import com.vadson40.peripherymanager.domain.manager.MediaPlayerManager
 import com.vadson40.peripherymanager.presentation.model.AudioOutputDeviceType
 import com.vadson40.peripherymanager.presentation.model.AudioOutputDeviceVO
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -51,6 +53,9 @@ class MainViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
 
+    private val _event = Channel<MainEvent>()
+    val event = _event.consumeAsFlow()
+
     init {
         peripheralManager.peripheralState
             .onEach { result ->
@@ -60,6 +65,12 @@ class MainViewModel(
                         audioDeviceList = result.audioOutputs.map { it.toAudioOutputDeviceVO() }
                     )
                 }
+            }
+            .launchIn(viewModelScope)
+
+        peripheralManager.permissionRequest
+            .onEach {
+                _event.send(MainEvent.PermissionRequest)
             }
             .launchIn(viewModelScope)
     }
@@ -72,18 +83,28 @@ class MainViewModel(
         mediaManager.stop()
     }
 
+    fun selectDevice(deviceVO: AudioOutputDeviceVO) {
+        viewModelScope.launch {
+            runCatching {
+                peripheralManager.request(PeripheralRequest.AudioOutput(deviceVO.deviceId))
+            }.onSuccess {
+                _event.send(MainEvent.ShowToast("Выбрано ${deviceVO.type.title}"))
+            }.onFailure {
+                _event.send(MainEvent.ShowToast("Не удалось установить выбранное устройство вывода звука"))
+            }
+        }
+    }
+
     fun setVolumeLevel(value: Int) {
         viewModelScope.launch {
             runCatching {
                 peripheralManager.request(PeripheralRequest.VolumeLevelChange(LevelChangeRequest(value)))
             }.onSuccess {
                 dataState.update { current ->
-                    current.copy(
-                        volumeLevel = value
-                    )
+                    current.copy(volumeLevel = value)
                 }
             }.onFailure {
-                // TODO
+                _event.send(MainEvent.ShowToast("Не удалось установить уровень звука"))
             }
         }
     }
@@ -113,6 +134,12 @@ sealed class UiState {
         val volumeLevel: Int
     ): UiState()
 
-    data class Error(val message: String): UiState()
+}
+
+sealed class MainEvent {
+
+    data object PermissionRequest : MainEvent()
+
+    data class ShowToast(val message: String) : MainEvent()
 
 }

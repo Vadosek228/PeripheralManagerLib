@@ -21,16 +21,18 @@ import com.vadson40.peripherymanager.presentation.model.AudioOutputDeviceType
 @Composable
 fun DeviceButton(
     device: AudioOutputDeviceType,
+    selected: Boolean,
     onClick: () -> Unit
 ) {
+    val colors =
+        if (selected) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+        else ButtonDefaults.buttonColors()
+
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-//        enabled = device.enabled,
-//        colors = ButtonDefaults.buttonColors(
-//            containerColor = if (!device.enabled) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-//            else MaterialTheme.colorScheme.primary
-//        )
+        enabled = selected,
+        colors = colors
     ) {
         Icon(
             imageVector = device.icon,
