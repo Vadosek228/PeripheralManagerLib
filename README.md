@@ -1,4 +1,4 @@
-# Phone number input panel
+# Peripheral Manager Library
 
 An easily configurable library for managing device peripherals. 
 With this library, you can effortlessly switch between the earpiece, loudspeaker, Bluetooth, or wired headphones.
@@ -12,8 +12,8 @@ The library offers features such as:
 - setting the volume level;
 - checking user permissions.
 
-<img width="200" height="400" alt="Screenshot_white" src="https://github.com/Vadosek228/PeripheralManagerLib/blob/master/IMAGE%202026-03-25%2012%3A42%3A36.jpg" />
-<img width="200" height="400" alt="Screenshot_black" src="https://github.com/Vadosek228/PeripheralManagerLib/blob/master/IMAGE%202026-03-25%2012%3A42%3A37.jpg" />
+<img width="200" height="400" alt="Screenshot_1" src="https://github.com/Vadosek228/PeripheralManagerLib/blob/master/image_1.jpg" />
+<img width="200" height="400" alt="Screenshot_2" src="https://github.com/Vadosek228/PeripheralManagerLib/blob/master/image_2.jpg" />
 
 ## Sample project
 Familiarize yourself with the test implementation of the [library](https://github.com/Vadosek228/PeripheralManagerLib/tree/master/app).
